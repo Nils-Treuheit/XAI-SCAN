@@ -1,4 +1,5 @@
-./data/cifar-20/*
+data/cifar-20/
+results/cifar-20/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
