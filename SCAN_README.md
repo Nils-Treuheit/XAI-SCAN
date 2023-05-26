@@ -60,10 +60,11 @@ Please follow the instructions underneath to perform semantic clustering with SC
 The code runs with recent Pytorch versions, e.g. 1.4. 
 Assuming [Anaconda](https://docs.anaconda.com/anaconda/install/), the most important packages can be installed as:
 ```shell
-conda install pytorch=1.4.0 torchvision=0.5.0 cudatoolkit=10.0 -c pytorch
+# deprecated: conda install pytorch=1.4.0 torchvision=0.5.0 cudatoolkit=10.0 -c pytorch
+conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia 
 conda install matplotlib scipy scikit-learn   # For evaluation and confusion matrix visualization
-conda install faiss-gpu                       # For efficient nearest neighbors search 
-conda install pyyaml easydict                 # For using config files
+conda install -c conda-forge faiss-gpu        # For efficient nearest neighbors search 
+conda install -c conda-forge pyyaml easydict  # For using config files
 conda install termcolor                       # For colored print statements
 ```
 We refer to the `requirements.txt` file for an overview of the packages in the environment we used to produce our results.
