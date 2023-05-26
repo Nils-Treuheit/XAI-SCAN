@@ -4,8 +4,7 @@ Licensed under the CC BY-NC 4.0 license (https://creativecommons.org/licenses/by
 """
 import torch
 import numpy as np
-import collections
-from torch._six import string_classes
+from collections.abc import Mapping, Sequence
 
 
 """ Custom collate function """
@@ -25,14 +24,14 @@ def collate_custom(batch):
     elif isinstance(batch[0], float):
         return torch.FloatTensor(batch)
 
-    elif isinstance(batch[0], string_classes):
+    elif isinstance(batch[0], str):
         return batch
-
-    elif isinstance(batch[0], collections.Mapping):
+ 
+    elif isinstance(batch[0], Mapping):
         batch_modified = {key: collate_custom([d[key] for d in batch]) for key in batch[0] if key.find('idx') < 0}
         return batch_modified
 
-    elif isinstance(batch[0], collections.Sequence):
+    elif isinstance(batch[0], Sequence):
         transposed = zip(*batch)
         return [collate_custom(samples) for samples in transposed]
 

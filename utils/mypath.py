@@ -15,7 +15,7 @@ class MyPath(object):
             return '/path/to/cifar-10/'
         
         elif database == 'cifar-20':
-            return '/path/to/cifar-20/'
+            return os.path.join(os.path.dirname(__file__),"..","data",'cifar-20')
 
         elif database == 'stl-10':
             return '/path/to/stl-10/'
