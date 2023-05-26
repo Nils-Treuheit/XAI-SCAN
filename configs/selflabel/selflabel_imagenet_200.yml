@@ -23,7 +23,7 @@ val_db_name: imagenet_200
 num_classes: 200
 
 # Transformations
-augmentation_strategy: ours 
+augmentation_strategy: scan 
 augmentation_kwargs:
    crop_size: 224
    normalize:

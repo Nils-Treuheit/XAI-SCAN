@@ -227,8 +227,8 @@ def get_train_transformations(p):
             transforms.Normalize(**p['augmentation_kwargs']['normalize'])
         ])
     
-    elif p['augmentation_strategy'] == 'ours':
-        # Augmentation strategy from our paper 
+    elif p['augmentation_strategy'] == 'scan':
+        # Augmentation strategy from SCAN paper 
         return transforms.Compose([
             transforms.RandomHorizontalFlip(),
             transforms.RandomCrop(p['augmentation_kwargs']['crop_size']),

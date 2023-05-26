@@ -20,7 +20,7 @@ num_classes: 10
 num_neighbors: 20
 
 # Transformations
-augmentation_strategy: ours 
+augmentation_strategy: scan 
 augmentation_kwargs:
    crop_size: 32
    normalize:

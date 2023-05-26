@@ -22,7 +22,7 @@ val_db_name: cifar-20
 num_classes: 20
 
 # Transformations
-augmentation_strategy: ours 
+augmentation_strategy: scan 
 augmentation_kwargs:
    crop_size: 32
    normalize:
