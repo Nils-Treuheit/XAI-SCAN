@@ -78,11 +78,13 @@ def main():
             _, acc = memory_bank.mine_nearest_neighbors(topk)
             print('Accuracy of top-{} nearest neighbors on validation set is {:.2f}'.format(topk, 100*acc))
 
-
     elif config['setup'] in ['scan', 'selflabel']:
         print(colored('Perform evaluation of the clustering model (setup={}).'.format(config['setup']), 'blue'))
         head = state_dict['head'] if config['setup'] == 'scan' else 0
         predictions, features = get_predictions(config, dataloader, model, return_features=True)
+        print("Dataloader Sample Keys:",next(iter(dataloader)).keys(),"| Dataloader Image Shape:",next(iter(dataloader))["image"].size())
+        print("Predictions keys:",predictions[0].keys(),"| Predictions Shape:",predictions[0]["predictions"].size())
+        print("Features Shape:",features.size())
         clustering_stats = hungarian_evaluate(head, predictions, dataset.classes, 
                                                 compute_confusion_matrix=True)
         print(clustering_stats)
