@@ -5,10 +5,11 @@ Licensed under the CC BY-NC 4.0 license (https://creativecommons.org/licenses/by
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from typing import List, Dict
 
 
 class ContrastiveModel(nn.Module):
-    def __init__(self, backbone, head='mlp', features_dim=128):
+    def __init__(self, backbone: Dict[str: nn.Module], head: str = 'mlp', features_dim: int = 128):
         super(ContrastiveModel, self).__init__()
         self.backbone = backbone['backbone']
         self.backbone_dim = backbone['dim']
@@ -32,14 +33,14 @@ class ContrastiveModel(nn.Module):
 
 
 class ClusteringModel(nn.Module):
-    def __init__(self, backbone, nclusters, nheads=1):
+    def __init__(self, backbone: Dict[str: nn.Module], nclusters: List[int] = [5, 10, 20, 50, 100, 200, 500]):
         super(ClusteringModel, self).__init__()
         self.backbone = backbone['backbone']
         self.backbone_dim = backbone['dim']
-        self.nheads = nheads
+        self.nheads = len(nclusters)
         assert(isinstance(self.nheads, int))
         assert(self.nheads > 0)
-        self.cluster_head = nn.ModuleList([nn.Linear(self.backbone_dim, nclusters) for _ in range(self.nheads)])
+        self.cluster_head = nn.ModuleList([nn.Linear(self.backbone_dim, nclusters[idx]) for idx in range(self.nheads)])
 
     def forward(self, x, forward_pass='default'):
         if forward_pass == 'default':

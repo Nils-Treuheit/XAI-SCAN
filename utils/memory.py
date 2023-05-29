@@ -7,14 +7,14 @@ import torch
 
 
 class MemoryBank(object):
-    def __init__(self, n, dim, num_classes, temperature):
+    def __init__(self, n, dim, num_classes, temperature, K=100):
         self.n = n
         self.dim = dim 
         self.features = torch.FloatTensor(self.n, self.dim)
         self.targets = torch.LongTensor(self.n)
         self.ptr = 0
         self.device = 'cpu'
-        self.K = 100
+        self.K = K
         self.temperature = temperature
         self.C = num_classes
 
