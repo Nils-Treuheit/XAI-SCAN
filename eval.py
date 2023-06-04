@@ -86,7 +86,7 @@ def main():
         print("Predictions keys:",predictions[0].keys(),"| Predictions Shape:",predictions[0]["predictions"].size())
         print("Features Shape:",features.size())
         clustering_stats = hungarian_evaluate(head, predictions, dataset.classes, 
-                                                compute_confusion_matrix=True)
+                                              compute_confusion_matrix=True)
         print(clustering_stats)
         if args.visualize_prototypes:
             prototype_indices = get_prototypes(config, predictions[head], features, model)

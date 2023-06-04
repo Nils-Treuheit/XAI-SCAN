@@ -9,7 +9,7 @@ from typing import List, Dict
 
 
 class ContrastiveModel(nn.Module):
-    def __init__(self, backbone: Dict[str: nn.Module], head: str = 'mlp', features_dim: int = 128):
+    def __init__(self, backbone, head: str = 'mlp', features_dim: int = 128):
         super(ContrastiveModel, self).__init__()
         self.backbone = backbone['backbone']
         self.backbone_dim = backbone['dim']
@@ -33,7 +33,7 @@ class ContrastiveModel(nn.Module):
 
 
 class ClusteringModel(nn.Module):
-    def __init__(self, backbone: Dict[str: nn.Module], nclusters: List[int] = [5, 10, 20, 50, 100, 200, 500]):
+    def __init__(self, backbone, nclusters: List[int] = [5, 20, 100, 300, 500]):
         super(ClusteringModel, self).__init__()
         self.backbone = backbone['backbone']
         self.backbone_dim = backbone['dim']

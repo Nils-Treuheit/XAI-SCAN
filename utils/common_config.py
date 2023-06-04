@@ -75,7 +75,7 @@ def get_model(p, pretrain_path=None):
         from models.models import ClusteringModel
         if p['setup'] == 'selflabel':
             assert(p['num_heads'] == 1)
-        model = ClusteringModel(backbone, p['num_classes'], p['num_heads'])
+        model = ClusteringModel(backbone, p['nclusters'])
 
     else:
         raise ValueError('Invalid setup {}'.format(p['setup']))

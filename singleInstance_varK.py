@@ -6,11 +6,13 @@ import argparse
 import torch
 import yaml
 from termcolor import colored
-from utils.common_config import get_val_dataset, get_val_transformations, get_val_dataloader,\
-                                get_model
+from utils.common_config import get_train_dataset, get_train_transformations, get_train_dataloader,\
+                                get_model, get_val_dataloader
 from utils.evaluate_utils import get_predictions, hungarian_evaluate
 from utils.memory import MemoryBank 
 from utils.utils import fill_memory_bank
+from sampleDataSet import SampleDataSet
+from get_sample_img import get_pic
 from PIL import Image
 import numpy as np
 import os 
@@ -25,32 +27,85 @@ FLAGS.add_argument('--visualize_prototypes', action='store_true',
                     help='Show the prototpye for each cluster')
 FLAGS.add_argument('--save_path', default='./results', help='Location of save_paths')
 FLAGS.add_argument('--topk', default=60, help='top k number for knn simclr method')
-FLAGS.add_argument('--clusterk', default=20, help='number of k clusters for scan method')
-FLAGS.add_argument('--path_to_img', default="./data/cifar_img_5109.jpeg", help='sample img')
+FLAGS.add_argument('--cluster_head', default=1, help='number of k clusters for scan method')
+FLAGS.add_argument('--path_to_img', default="./data/cifar_img_5109.jpeg", 
+                   help='path to the sample img')
+FLAGS.add_argument('--re_calc', default=False, action='store_true', 
+                   help='re-calc knn for train set')
 args = FLAGS.parse_args()
 
+topk_sample_file_path = os.path.join(os.path.dirname(__file__), 'results', 'cifar-20', 
+                                     'pretext', 'topk-single_img-neighbors.npy')
+topk_train_file_path = os.path.join(os.path.dirname(__file__), 'results', 'cifar-20', 
+                                    'pretext', 'topk-train-neighbors.npy')
+
 def main():
-    
+
+    if args.re_calc:
+        ''' Re-Calculation Section '''
+        # Read config file
+        print(colored('Read config file {} ...'.format(args.config_pretext), 'blue'))
+        with open(args.config_pretext, 'r') as stream:
+            config_simclr = yaml.safe_load(stream)
+        config_simclr['batch_size'] = 512 # To make sure we can evaluate on a single 1080ti
+        print(config_simclr)
+
+        # Get dataset for fine-tuning 
+        print(colored('Get train dataset ...', 'blue'))
+        transforms = get_train_transformations(config_simclr)
+        dataset = get_train_dataset(config_simclr, transforms)
+        dataloader = get_train_dataloader(config_simclr, dataset)
+        print('Number of samples: {}'.format(len(dataset)))
+
+        # Get model
+        print(colored('Get models ...', 'blue'))
+        print("SimCLR:")
+        simclr = get_model(config_simclr)
+        print(simclr)
+
+        # Read model weights
+        print(colored('Load model weights ...', 'blue'))
+        state_dict_simclr = torch.load(args.simclr, map_location='cpu')
+
+        # CUDA
+        simclr.cuda()
+
+        # Perform re-calc for train set KNN 
+        print(colored('Perform KNN re-calc of the train set for SimCLR pass-through (setup={}).'.format(config_simclr['setup']), 'blue'))
+        print('Create Memory Bank')
+        recalc_mb = MemoryBank(len(dataset), config_simclr['model_kwargs']['features_dim'], 
+                               config_simclr['num_classes'], config_simclr['criterion_kwargs']['temperature'])
+        recalc_mb.cuda()
+
+        # Mine the topk nearest neighbors for the query image.
+        print(colored('Fill memory bank for mining the nearest neighbors ...', 'blue'))
+        fill_memory_bank(dataloader, simclr, recalc_mb)
+        print('Mine the nearest neighbors (Top-%d)' %(args.topk)) 
+        indices, acc = recalc_mb.mine_nearest_neighbors(args.topk)
+        print('Accuracy of top-%d nearest neighbors on val set is %.2f' %(args.topk, 100*acc))
+        np.save( topk_train_file_path, indices )   
+
+
+    ''' Sample Section '''
+    img_samples = np.array([get_pic()[2] for _ in range(128)])
+    #np.array([np.asarray(Image.open(args.path_to_img))])
+
     # Read config file
     print(colored('Read config file {} ...'.format(args.config_pretext), 'blue'))
     with open(args.config_pretext, 'r') as stream:
         config_simclr = yaml.safe_load(stream)
-    config_simclr['batch_size'] = 512 # To make sure we can evaluate on a single 1080ti
+    config_simclr['batch_size'] = min(len(img_samples),512) # To make sure we can evaluate on a single 1080ti
     print(config_simclr)
     print(colored('Read config file {} ...'.format(args.config_scan), 'blue'))
     with open(args.config_scan, 'r') as stream:
         config_scan = yaml.safe_load(stream)
-    config_scan['batch_size'] = 512 # To make sure we can evaluate on a single 1080ti
+    config_scan['batch_size'] = min(len(img_samples),512) # To make sure we can evaluate on a single 1080ti
     print(config_scan)
 
-    # Get dataset for fine-tuning 
-    print(colored('Get validation dataset ...', 'blue'))
-    transforms = get_val_transformations(config_simclr)
-    dataset = get_val_dataset(config_simclr, transforms)
-    dataloader = get_val_dataloader(config_simclr, dataset)
-    print('Number of samples: {}'.format(len(dataset)))
-
-    img_sample = {"image":[np.asarray(Image.open(args.path_to_img))], "target":["unknown"]}
+    print(colored('Get query dataset ...', 'blue'))
+    img_dataset = SampleDataSet(img_samples)
+    img_dataloader = get_val_dataloader(config_simclr,img_dataset)
+    print('Number of samples: {}'.format(len(img_dataset)))
 
     # Get model
     print(colored('Get models ...', 'blue'))
@@ -73,67 +128,35 @@ def main():
     simclr.cuda()
     scan.cuda()
 
-    # Perform evaluation
-    print(colored('Perform evaluation of the pretext task (setup={}).'.format(config_simclr['setup']), 'blue'))
+    # Perform KNN calc for img samples  
+    print(colored('Perform KNN calc for given img samples after SimCLR pass-through (setup={}).'.format(config_simclr['setup']), 'blue'))
     print('Create Memory Bank')
-    retrain_mb = MemoryBank(len(dataset), config_simclr['model_kwargs']['features_dim'],
+    single_img = MemoryBank(len(img_dataset), config_simclr['model_kwargs']['features_dim'], 
                             config_simclr['num_classes'], config_simclr['criterion_kwargs']['temperature'])
-    single_img = MemoryBank(1, config_simclr['model_kwargs']['features_dim'], 
-                            config_simclr['num_classes'], config_simclr['criterion_kwargs']['temperature'])
-    retrain_mb.cuda()
     single_img.cuda()
 
-    print('Fill Memory Bank')
-    fill_memory_bank(dataloader, simclr, retrain_mb)
+    # Mine the topk nearest neighbors for the query image.
+    print(colored('Fill memory bank for mining the nearest neighbors ...', 'blue'))
+    fill_memory_bank(img_dataloader, simclr, single_img)
+    print('Mine the nearest neighbors (Top-%d)' %(args.topk))
+    indices, acc = single_img.mine_nearest_neighbors(args.topk)
+    print('Accuracy of top-%d nearest neighbors on val set is %.2f' %(args.topk, 100*acc))
+    np.save( topk_sample_file_path, indices ) 
 
-    # Mine the topk nearest neighbors at the very end (Train) 
-    # These will be served as input to the SCAN loss.
-    print(colored('Fill memory bank for mining the nearest neighbors (train) ...', 'blue'))
-    fill_memory_bank(dataloader, simclr, retrain_mb)
-    print('Mine the nearest neighbors (Top-%d)' %(args.topk)) 
-    indices, acc = retrain_mb.mine_nearest_neighbors(args.topk)
-    print('Accuracy of top-%d nearest neighbors on train set is %.2f' %(args.topk, 100*acc))
-    np.save(os.path.join(args.save_path, 'pretext', 'top%d_neighbors_train_path'%args.topk))   
+    # SCAN evaluation
+    print(colored('Perform evaluation of the clustering model (setup={}).'.format(config_scan['setup']), 'blue'))
+    head = state_dict_scan['head'] if config_scan['setup'] == 'scan' else 0
+    predictions, features = get_predictions(config_scan, img_dataloader, scan, return_features=True, cluster_head=args.cluster_head)
+    print("Dataloader Sample Keys:",next(iter(img_dataloader)).keys(),"| Dataloader Image Shape:",next(iter(img_dataloader))["image"].size())
+    print("Predictions keys:",predictions[0].keys(),"| Predictions Shape:",predictions[0]["predictions"].size())
+    print("Features Shape:",features.size())
+    clustering_stats = hungarian_evaluate(head, predictions, img_dataset.classes, 
+                                          compute_confusion_matrix=True)
+    print(clustering_stats)
+    if args.visualize_prototypes:
+        prototype_indices = get_prototypes(config_scan, predictions[head], features, scan)
+        visualize_indices(prototype_indices, img_dataset, clustering_stats['hungarian_match'])
 
-    
-    # Mine the topk nearest neighbors at the very end (Val)
-    # These will be used for validation.
-    print(colored('Fill memory bank for mining the nearest neighbors (val) ...', 'blue'))
-    fill_memory_bank(dataloader, simclr, single_img)
-    print('Mine the nearest neighbors (Top-%d)' %(topk)) 
-    indices, acc = single_img.mine_nearest_neighbors(topk)
-    print('Accuracy of top-%d nearest neighbors on val set is %.2f' %(topk, 100*acc))
-    np.save(p['topk_neighbors_val_path'], indices)   
-
-
-    retrain_mb = MemoryBank(len(dataset), config_simclr['model_kwargs']['features_dim'],
-                            config_scan['num_classes'], config_scan['temperature'])
-    single_img = MemoryBank(1, config_scan['model_kwargs']['features_dim'], 
-                            config_scan['num_classes'], config_scan['temperature'])
-    retrain_mb.cuda()
-    single_img.cuda()
-        
-
-        print('Mine the nearest neighbors')
-        for topk in [1, 5, 20]: # Similar to Fig 2 in paper 
-            _, acc = memory_bank.mine_nearest_neighbors(topk)
-            print('Accuracy of top-{} nearest neighbors on validation set is {:.2f}'.format(topk, 100*acc))
-
-    elif config['setup'] in ['scan', 'selflabel']:
-        print(colored('Perform evaluation of the clustering model (setup={}).'.format(config['setup']), 'blue'))
-        head = state_dict['head'] if config['setup'] == 'scan' else 0
-        predictions, features = get_predictions(config, dataloader, model, return_features=True)
-        print("Dataloader Sample Keys:",next(iter(dataloader)).keys(),"| Dataloader Image Shape:",next(iter(dataloader))["image"].size())
-        print("Predictions keys:",predictions[0].keys(),"| Predictions Shape:",predictions[0]["predictions"].size())
-        print("Features Shape:",features.size())
-        clustering_stats = hungarian_evaluate(head, predictions, dataset.classes, 
-                                                compute_confusion_matrix=True)
-        print(clustering_stats)
-        if args.visualize_prototypes:
-            prototype_indices = get_prototypes(config, predictions[head], features, model)
-            visualize_indices(prototype_indices, dataset, clustering_stats['hungarian_match'])
-    else:
-        raise NotImplementedError
 
 @torch.no_grad()
 def get_prototypes(config, predictions, features, model, topk=10):

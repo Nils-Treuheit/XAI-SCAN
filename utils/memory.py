@@ -7,7 +7,7 @@ import torch
 
 
 class MemoryBank(object):
-    def __init__(self, n, dim, num_classes, temperature, K=100):
+    def __init__(self, n, dim, num_classes, temperature, K=1000):
         self.n = n
         self.dim = dim 
         self.features = torch.FloatTensor(self.n, self.dim)

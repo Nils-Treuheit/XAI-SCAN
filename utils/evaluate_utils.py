@@ -32,7 +32,7 @@ def contrastive_evaluate(val_loader, model, memory_bank):
 
 
 @torch.no_grad()
-def get_predictions(p, dataloader, model, return_features=False):
+def get_predictions(p, dataloader, model, return_features=False, cluster_head=None):
     # Make predictions on a dataset with neighbors
     model.eval()
     predictions = [[] for _ in range(p['num_heads'])]
@@ -55,8 +55,8 @@ def get_predictions(p, dataloader, model, return_features=False):
     for batch in dataloader:
         images = batch[key_].cuda(non_blocking=True)
         bs = images.shape[0]
-        res = model(images, forward_pass='return_all')
-        output = res['output']
+        res = model(images, forward_pass='return_all') 
+        output = res['output'] if cluster_head == None else [res['output'][cluster_head]]
         if return_features:
             features[ptr: ptr+bs] = res['features']
             ptr += bs

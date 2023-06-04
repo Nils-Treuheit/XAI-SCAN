@@ -2,8 +2,17 @@ from data.cifar import CIFAR20
 from random import randint
 from PIL import Image
 
+DATASET = CIFAR20(train=False, transform=None, download=True)
 
-dataset = CIFAR20(train=False, transform=None, download=True)
-num = randint(0,len(dataset)-1)
-pic = Image.fromarray(dataset.get_image(num))
-pic.save("./data/cifar_img_%d.jpeg"%num)
+def get_pic(num=None):
+    if num==None: num = randint(0,len(DATASET)-1)
+    pic = DATASET[num]['image']
+    data = DATASET.get_image(num)
+    return (num,pic,data)
+
+def main():
+    num,pic,_ = get_pic()
+    pic.save("./data/cifar_img_%d.jpeg"%num)
+
+if __name__ == "__main__":
+    main() 
