@@ -1,6 +1,5 @@
 from data.cifar import CIFAR20
 from random import randint
-from PIL import Image
 
 DATASET = CIFAR20(train=False, transform=None, download=True)
 
