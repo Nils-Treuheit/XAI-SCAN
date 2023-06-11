@@ -78,7 +78,10 @@ class SampleDataSet(Dataset):
     def get_sample_image(self, index):
         img = self.SAMPLE_DATA[index]
         return img
-        
+
+    def sample_len(self):
+        return len(self.SAMPLE_DATA)
+
     def __len__(self):
         return len(self.data)
 

@@ -56,28 +56,81 @@ def get_predictions(p, dataloader, model, return_features=False, cluster_head=No
     for batch in dataloader.batch_sampler:
         images = torch.tensor([np.array(dataset[idx][key_]) for idx in batch]).cuda(non_blocking=True)
         bs = images.shape[0]
-        #print(images.shape)
         res = model(images, forward_pass='return_all') 
         output = res['output'] if cluster_head == None else [res['output'][cluster_head]]
         if return_features:
             features[ptr: ptr+bs] = res['features']
             ptr += bs
         for i, output_i in enumerate(output):
-            #print(output_i.shape)
             predictions[i].append(torch.argmax(output_i, dim=1))
             probs[i].append(F.softmax(output_i, dim=1))
         targets.append(torch.tensor([dataset[idx]['target'] for idx in batch]))
         if include_neighbors:
             neighbors.append(torch.tensor([np.array(dataset[idx]['possible_neighbors']) for idx in batch]))
 
-    #for pred_ in predictions: 
-    #    if len(pred_)>0:
-    #        for i in range(len(pred_)): 
-    #            print(pred_[i].shape,end=",")
-    #        print("all")    
-    #    else:
-    #        print("empty")
-    #print("total len",len(predictions))
+    predictions = [torch.cat(pred_, dim = 0).cpu() 
+                   for pred_ in predictions]
+    probs = [torch.cat(prob_, dim=0).cpu() 
+             for prob_ in probs]
+    targets = torch.cat(targets, dim=0)
+
+    if include_neighbors:
+        neighbors = torch.cat(neighbors, dim=0)
+        out = [{'predictions': pred_, 
+                'probabilities': prob_, 
+                'targets': targets, 
+                'neighbors': neighbors} 
+                for pred_, prob_ in zip(predictions, probs)]
+
+    else:
+        out = [{'predictions': pred_, 
+                'probabilities': prob_, 
+                'targets': targets} 
+                for pred_, prob_ in zip(predictions, probs)]
+
+    if return_features:
+        return out, features.cpu()
+    else:
+        return out
+
+# TODO: Rework instead of dataloader use data samples
+@torch.no_grad()
+def get_sample_preds(p, dataloader, model, return_features=False, cluster_head=None):
+    # Make predictions on a dataset with neighbors
+    model.eval()
+    predictions = [[] for _ in range(p['num_heads'])] if cluster_head == None else [[]]
+    probs = [[] for _ in range(p['num_heads'])] if cluster_head == None else [[]]
+    targets = []
+    if return_features:
+        ft_dim = get_feature_dimensions_backbone(p)
+        features = torch.zeros((len(dataloader.sampler), ft_dim)).cuda()
+    
+    if isinstance(dataloader.dataset, NeighborsDataset): # Also return the neighbors
+        key_ = 'anchor'
+        include_neighbors = True
+        neighbors = []
+
+    else:
+        key_ = 'image'
+        include_neighbors = False
+
+    ptr = 0
+    dataset = dataloader.dataset
+    for batch in dataloader.batch_sampler:
+        images = torch.tensor([np.array(dataset[idx][key_]) for idx in batch]).cuda(non_blocking=True)
+        bs = images.shape[0]
+        res = model(images, forward_pass='return_all') 
+        output = res['output'] if cluster_head == None else [res['output'][cluster_head]]
+        if return_features:
+            features[ptr: ptr+bs] = res['features']
+            ptr += bs
+        for i, output_i in enumerate(output):
+            predictions[i].append(torch.argmax(output_i, dim=1))
+            probs[i].append(F.softmax(output_i, dim=1))
+        targets.append(torch.tensor([dataset[idx]['target'] for idx in batch]))
+        if include_neighbors:
+            neighbors.append(torch.tensor([np.array(dataset[idx]['possible_neighbors']) for idx in batch]))
+
     predictions = [torch.cat(pred_, dim = 0).cpu() 
                    for pred_ in predictions]
     probs = [torch.cat(prob_, dim=0).cpu() 

@@ -29,8 +29,8 @@ FLAGS.add_argument('--simclr_model', default="./results/cifar-20/pretext/model.p
 FLAGS.add_argument('--scan_model', default="./results/cifar-20/scan/model.pth.tar",
                    help='Location where model is saved')
 FLAGS.add_argument('--save_path', default='./results', help='Location of save_paths')
-FLAGS.add_argument('-k','--topk', default=20, help='top k number for knn simclr method')
-FLAGS.add_argument('-c','--cluster_head', default=1, 
+FLAGS.add_argument('-k','--topk', default=50, help='top k number for knn simclr method')
+FLAGS.add_argument('-c','--cluster_head', default=2, 
                    help='index of cluster head defining the'+
                    ' number of k clusters for scan method [5,20,100,300,500]')
 FLAGS.add_argument('-q','--paths_to_img', default="./data/cifar_img_5109.jpeg", 
@@ -153,12 +153,12 @@ def main():
 
     # SCAN evaluation
     print(colored('Perform evaluation of the clustering model (setup={}).'.format(config_scan['setup']), 'blue'))
-    head = 0 #state_dict_scan['head'] if config_scan['setup'] == 'scan' else 0
-    predictions, features = get_predictions(config_scan, img_dataloader, scan, return_features=True, cluster_head=args.cluster_head)
-    #print("Dataloader Sample Keys:",next(iter(img_dataloader)).keys(),"| Dataloader Image Shape:",next(iter(img_dataloader))["image"].size())
-    print("Predictions keys:",predictions[0].keys(),"| Predictions Shape:",predictions[0]["predictions"].size())
+    # get all heads predictions - to save time cluster head can also be given straight to get_prediction function
+    predictions, features = get_predictions(config_scan, img_dataloader, scan, return_features=True)
+    # give results for specific head
+    print("Predictions keys:",predictions[args.cluster_head].keys(),"| Predictions Shape:",predictions[args.cluster_head]["predictions"].size())
     print("Features Shape:",features.size())
-    clustering_stats = hungarian_evaluate(head, predictions, img_dataset.dataset.classes, 
+    clustering_stats = hungarian_evaluate(args.cluster_head, predictions, img_dataset.dataset.classes, 
                                           compute_confusion_matrix=True)
     print(clustering_stats)
     
