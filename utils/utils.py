@@ -63,7 +63,7 @@ def fill_memory_bank(loader, model, memory_bank):
     dataset = loader.dataset
 
     for i, batch in enumerate(loader.batch_sampler):
-        images = torch.tensor([np.array(dataset[idx]['image']) for idx in batch]).cuda(non_blocking=True)
+        images = torch.tensor(np.array([np.array(dataset[idx]['image']) for idx in batch])).cuda(non_blocking=True)
         targets = torch.tensor([dataset[idx]['target'] for idx in batch]).cuda(non_blocking=True)
         output = model(images)
         memory_bank.update(output, targets)
