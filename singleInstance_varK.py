@@ -38,6 +38,10 @@ FLAGS.add_argument('-q','--paths_to_img', default="./data/cifar_img_5109.jpeg",
                    help='paths to the sample img separated by comma no spaces')
 FLAGS.add_argument('--re_calc', default=False, action='store_true', 
                    help='re-calc knn for train set')
+FLAGS.add_argument('--no_viz', default=False, action='store_true', 
+                   help='disable plot evaluation functionality')
+FLAGS.add_argument('--perf', default=False, action='store_true', 
+                   help='used to time minimal query effort method')
 args = FLAGS.parse_args()
 
 topk_sample_file_path = os.path.join(os.path.dirname(__file__), 'results', 'cifar-20', 
@@ -146,7 +150,7 @@ def main():
     print('Mine the nearest neighbors (Top-%d)' %(args.topk))
     indices, acc = img_db.mine_nearest_neighbors(args.topk)
     print('Accuracy of top-%d nearest neighbors on val set is %.2f' %(args.topk, 100*acc))
-    np.save( topk_sample_file_path, indices ) 
+    if not args.perf: np.save( topk_sample_file_path, indices ) 
 
     img_transform = get_val_transformations(config_scan)
     img_dataset = NeighborsDataset(SampleDataSet(img_samples,transform=img_transform), indices, args.topk)
@@ -155,19 +159,21 @@ def main():
     # SCAN evaluation
     cluster_heads = [int(cluster_head) for cluster_head in args.cluster_heads.split(",")]
     print(colored('Perform evaluation of the clustering model (setup={}).'.format(config_scan['setup']), 'blue'))
-    # get all heads predictions - to save time cluster head can also be given straight to get_prediction function
-    predictions, features = get_predictions(config_scan, img_dataloader, scan, return_features=True)
-    print("Features Shape:",features.size())
-    # give results for specific heads
-    for cluster_head in cluster_heads:
-        print("%d. Cluster Head\n----------------"%cluster_head)
-        print("Predictions keys:",predictions[cluster_head].keys(),
-              "| Predictions Shape:",predictions[cluster_head]["predictions"].size())
+    if not args.perf:
+        # get all heads predictions - to save time cluster head can also be given straight to get_prediction function
+        predictions, features = get_predictions(config_scan, img_dataloader, scan, return_features=True)
+        print("Features Shape:",features.size())
+        # give results for specific heads
+        for cluster_head in cluster_heads:
+            print("%d. Cluster Head\n----------------"%cluster_head)
+            print("Predictions keys:",predictions[cluster_head].keys(),
+                  "| Predictions Shape:",predictions[cluster_head]["predictions"].size())
         
     # give eva for 20 cluster head since it is interpretable
-    clustering_stats = hungarian_evaluate(1, predictions, img_dataset.dataset.classes[:-1], 
-                                          compute_confusion_matrix=True)
-    print(clustering_stats)
+    if not (args.no_viz or args.perf):
+        clustering_stats = hungarian_evaluate(1, predictions, img_dataset.dataset.classes[:-1], 
+                                              compute_confusion_matrix=True)
+        print(clustering_stats)
 
     # give results for specific heads
     predictions, features = get_sample_preds(config_scan, img_dataloader, scan, return_features=True)
