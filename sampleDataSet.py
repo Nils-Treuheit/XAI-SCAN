@@ -7,7 +7,7 @@ from data.cifar import CIFAR20
 class SampleDataSet(Dataset):
 
     ''' samples is a np.ndarray representation of a list of images '''
-    def __init__(self, samples: np.ndarray, targets=None, labels=None, transform=None):
+    def __init__(self, samples, targets=None, labels=None, transform=None):
 
         super(SampleDataSet, self).__init__()
         self.BASE_DATASET = CIFAR20(train=True, transform=transform, download=True)
@@ -78,9 +78,12 @@ class SampleDataSet(Dataset):
     def get_sample_image(self, index):
         img = self.SAMPLE_DATA[index]
         return img
-        
+
+    def sample_len(self):
+        return len(self.SAMPLE_DATA)
+
     def __len__(self):
         return len(self.data)
 
     def extra_repr(self):
-        return "Single Image Dataset"
+        return "Split: Single Image Dataset"
