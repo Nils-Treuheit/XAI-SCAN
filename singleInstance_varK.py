@@ -30,7 +30,7 @@ FLAGS.add_argument('--scan_model', default="./results/cifar-20/scan/model.pth.ta
                    help='Location where model is saved')
 FLAGS.add_argument('--save_path', default='./results', help='Location of save_paths')
 FLAGS.add_argument('-k','--topk', default=50, help='top k number for knn simclr method')
-FLAGS.add_argument('-c','--cluster_heads', default="2", 
+FLAGS.add_argument('-c','--cluster_heads', default="0,2,4", 
                    help='comma separated index list of cluster heads'+
                    ' (each head defines a number of k clusters) '+
                    'for scan method (pretrained heads for k=[5,20,100,300,500])')
@@ -173,7 +173,6 @@ def main():
     predictions, features = get_sample_preds(config_scan, img_dataloader, scan, return_features=True)
     print("Features of Sample/s:",features)
     for cluster_head in cluster_heads:
-        print("%d. Cluster Head\n----------------"%cluster_head)
         print("Predictions of Sample/s for "+
               "%d. cluster head:"%cluster_head,
               predictions[cluster_head])
