@@ -11,6 +11,7 @@ from data.custom_dataset import NeighborsDataset
 from sklearn import metrics
 from scipy.optimize import linear_sum_assignment
 from losses.losses import entropy
+from PIL import Image
 
 
 @torch.no_grad()
@@ -54,7 +55,7 @@ def get_predictions(p, dataloader, model, return_features=False, cluster_head=No
     ptr = 0
     dataset = dataloader.dataset
     for batch in dataloader.batch_sampler:
-        images = torch.tensor([np.array(dataset[idx][key_]) for idx in batch]).cuda(non_blocking=True)
+        images = torch.tensor(np.array([np.array(dataset[idx][key_]) for idx in batch])).cuda(non_blocking=True)
         bs = images.shape[0]
         res = model(images, forward_pass='return_all') 
         output = res['output'] if cluster_head == None else [res['output'][cluster_head]]
@@ -66,7 +67,7 @@ def get_predictions(p, dataloader, model, return_features=False, cluster_head=No
             probs[i].append(F.softmax(output_i, dim=1))
         targets.append(torch.tensor([dataset[idx]['target'] for idx in batch]))
         if include_neighbors:
-            neighbors.append(torch.tensor([np.array(dataset[idx]['possible_neighbors']) for idx in batch]))
+            neighbors.append(torch.tensor(np.array([np.array(dataset[idx]['possible_neighbors']) for idx in batch])))
 
     predictions = [torch.cat(pred_, dim = 0).cpu() 
                    for pred_ in predictions]
@@ -100,24 +101,36 @@ def get_sample_preds(p, dataloader, model, return_features=False, cluster_head=N
     model.eval()
     predictions = [[] for _ in range(p['num_heads'])] if cluster_head == None else [[]]
     probs = [[] for _ in range(p['num_heads'])] if cluster_head == None else [[]]
+    
+    dataset = None
+    include_neighbors = False
+    dataset = dataloader.dataset
+    transform = None
+
+    if isinstance(dataloader.dataset, NeighborsDataset): # Also return the neighbors
+        include_neighbors = True
+        neighbors = []
+        dataset = dataloader.dataset.dataset
+        transform = dataloader.dataset.anchor_transform
+        nds = dataloader.dataset
+        first_elem = len(dataset.BASE_DATASET)
+    
+    sampler_len = min(len(dataloader.sampler),dataset.sample_len())
     targets = []
     if return_features:
         ft_dim = get_feature_dimensions_backbone(p)
-        features = torch.zeros((len(dataloader.sampler), ft_dim)).cuda()
+        features = torch.zeros((sampler_len, ft_dim)).cuda()
     
-    if isinstance(dataloader.dataset, NeighborsDataset): # Also return the neighbors
-        key_ = 'anchor'
-        include_neighbors = True
-        neighbors = []
-
-    else:
-        key_ = 'image'
-        include_neighbors = False
+    sample_ids = [[*range(start,start+sampler_len)] for start in range(0,dataset.sample_len(),sampler_len)]
 
     ptr = 0
-    dataset = dataloader.dataset
-    for batch in dataloader.batch_sampler:
-        images = torch.tensor([np.array(dataset[idx][key_]) for idx in batch]).cuda(non_blocking=True)
+    for batch in sample_ids:
+        imgs = np.array([dataset.get_sample_image(idx) for idx in batch]) \
+               if transform == None else \
+               np.array([np.array(transform(
+                Image.fromarray(dataset.get_sample_image(idx)))) 
+                for idx in batch])
+        images = torch.tensor(imgs).cuda(non_blocking=True)
         bs = images.shape[0]
         res = model(images, forward_pass='return_all') 
         output = res['output'] if cluster_head == None else [res['output'][cluster_head]]
@@ -129,7 +142,7 @@ def get_sample_preds(p, dataloader, model, return_features=False, cluster_head=N
             probs[i].append(F.softmax(output_i, dim=1))
         targets.append(torch.tensor([dataset[idx]['target'] for idx in batch]))
         if include_neighbors:
-            neighbors.append(torch.tensor([np.array(dataset[idx]['possible_neighbors']) for idx in batch]))
+            neighbors.append(torch.tensor([np.array(nds[first_elem+idx]['possible_neighbors']) for idx in batch]))
 
     predictions = [torch.cat(pred_, dim = 0).cpu() 
                    for pred_ in predictions]
