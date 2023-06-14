@@ -1,3 +1,56 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:b608986da52fb73cb58058e9cf3ad53ba0a21538745272b875e4d1929200d110
-size 896
+# setup
+setup: selflabel
+
+# Threshold
+confidence_threshold: 0.99
+
+# EMA
+use_ema: True
+ema_alpha: 0.999
+
+# Loss
+criterion: confidence-cross-entropy
+criterion_kwargs:
+   apply_class_balancing: False
+
+# Model
+backbone: resnet50
+num_heads: 1
+
+# Dataset
+train_db_name: imagenet_50
+val_db_name: imagenet_50
+num_classes: 50
+
+# Transformations
+augmentation_strategy: scan 
+augmentation_kwargs:
+   crop_size: 224
+   normalize:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+   num_strong_augs: 4
+   cutout_kwargs:
+     n_holes: 1
+     length: 75
+     random: True
+
+transformation_kwargs:
+   crop_size: 224
+   normalize:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+
+# Hyperparameters
+optimizer: sgd
+optimizer_kwargs:
+   lr: 0.03
+   weight_decay: 0.0
+   nesterov: False
+   momentum: 0.9
+epochs: 25
+batch_size: 512
+num_workers: 16
+
+# Scheduler
+scheduler: constant 
