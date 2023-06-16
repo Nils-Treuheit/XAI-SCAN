@@ -46,6 +46,8 @@ FLAGS.add_argument('-q','--paths_to_img', default="./data/cifar_img_5109.jpeg",
                    help='paths to the sample img separated by comma no spaces')
 FLAGS.add_argument('-e','--epochs', default=25, 
                    help='number of epochs for re-training phase')
+FLAGS.add_argument('--no_grad', default=False, action='store_true', 
+                   help='disable grad cam explainable ai functionality')
 FLAGS.add_argument('--no_viz', default=False, action='store_true', 
                    help='disable plot evaluation functionality')
 FLAGS.add_argument('--perf', default=False, action='store_true', 
@@ -352,6 +354,14 @@ def main():
     img_transform = get_val_transformations(config_scan)
     img_dataset = NeighborsDataset(SampleDataSet(img_samples,transform=img_transform), indices, args.topk)
     img_dataloader = get_val_dataloader(config_scan,img_dataset)
+
+    if not args.no_grad:
+        # Apply Grad-CAM: generate heatmap for explaining cluster assignment with GradCam
+        for img in img_samples:
+            from grad_cam import grad_cam
+            input_image_arr = np.array(img_dataset.anchor_transform(Image.fromarray(img))) 
+            grad_cam(model = scan, input_rgb_img =img, input_img_arr = input_image_arr)
+    
 
     # SCAN evaluation
     cluster_heads = [int(cluster_head) for cluster_head in args.cluster_heads.split(",")]

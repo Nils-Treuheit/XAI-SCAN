@@ -80,7 +80,7 @@ def main():
 
     elif config['setup'] in ['scan', 'selflabel']:
         print(colored('Perform evaluation of the clustering model (setup={}).'.format(config['setup']), 'blue'))
-        head = state_dict['head'] if config['setup'] == 'scan' else 0
+        head = 1 #state_dict['head'] if config['setup'] == 'scan' else 0
         predictions, features = get_predictions(config, dataloader, model, return_features=True)
         print("Dataloader Sample Keys:",next(iter(dataloader)).keys(),"| Dataloader Image Shape:",next(iter(dataloader))["image"].size())
         print("Predictions keys:",predictions[0].keys(),"| Predictions Shape:",predictions[0]["predictions"].size())
