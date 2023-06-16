@@ -14,9 +14,9 @@ from data.custom_dataset import NeighborsDataset
 from sampleDataSet import SampleDataSet
 from get_sample_img import get_pic
 from PIL import Image
+from grad_cam import grad_cam
 import numpy as np
 import os 
-
 
 FLAGS = argparse.ArgumentParser(description='Evaluate models from the model zoo')
 FLAGS.add_argument('--config_pretext', default="./configs/pretext/simclr_cifar20.yml", 
@@ -125,6 +125,7 @@ def main():
     simclr.load_state_dict(state_dict_simclr)
     scan.load_state_dict(state_dict_scan['model'])
     
+    # TODO make each cuda call optional --> so that the programm is also executable on cpu
     # CUDA
     simclr.cuda()
     scan.cuda()
@@ -155,6 +156,12 @@ def main():
     img_dataset = NeighborsDataset(SampleDataSet(img_samples,transform=img_transform), indices, args.topk)
     img_dataloader = get_val_dataloader(config_scan,img_dataset)
 
+    # Apply Grad-CAM: generate heatmap for explaining cluster assignment with GradCam
+    input_rgb_img = img_dataset.dataset.get_sample_image(0)
+    input_image_arr = np.array(img_dataset.anchor_transform(
+                Image.fromarray(input_rgb_img))) 
+    grad_cam(model = scan, input_rgb_img =input_rgb_img, input_img_arr = input_image_arr)
+    
     # SCAN evaluation
     cluster_heads = [int(cluster_head) for cluster_head in args.cluster_heads.split(",")]
     print(colored('Perform evaluation of the clustering model (setup={}).'.format(config_scan['setup']), 'blue'))
@@ -181,7 +188,6 @@ def main():
         print("Predictions of Sample/s for "+
               "%d. cluster head:"%cluster_head,
               predictions[cluster_head])
-
 
 if __name__ == "__main__":
     main() 
