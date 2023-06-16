@@ -161,7 +161,6 @@ def get_val_dataset(p, transform=None, to_neighbors_dataset=False):
     if to_neighbors_dataset: # Dataset returns an image and one of its nearest neighbors.
         from data.custom_dataset import NeighborsDataset
         indices = np.load(p['topk_neighbors_val_path'])
-        print(indices)
         # Neighbors 
         dataset = NeighborsDataset(dataset, indices, 5) # Only use 5
 
@@ -223,6 +222,11 @@ def get_train_transformations(p):
 def get_val_transformations(p):
     return transforms.Compose([
             transforms.CenterCrop(p['transformation_kwargs']['crop_size']),
+            transforms.ToTensor(), 
+            transforms.Normalize(**p['transformation_kwargs']['normalize'])])
+    
+def get_visualization_transformations(p):
+    return transforms.Compose([
             transforms.ToTensor(), 
             transforms.Normalize(**p['transformation_kwargs']['normalize'])])
 
