@@ -27,7 +27,7 @@ FLAGS.add_argument('--simclr_model', default="./results/cifar-20/pretext/model.p
 FLAGS.add_argument('--scan_model', default="./results/cifar-20/scan/model.pth.tar",
                    help='Location where model is saved')
 FLAGS.add_argument('--save_path', default='./results', help='Location of save_paths')
-FLAGS.add_argument('-k','--topk', default=50, help='top k number for knn simclr method')
+FLAGS.add_argument('-k','--topk', default=50, type=int, help='top k number for knn simclr method')
 FLAGS.add_argument('-c','--cluster_heads', default="0,2,4", 
                    help='comma separated index list of cluster heads'+
                    ' (each head defines a number of k clusters) '+

@@ -144,11 +144,12 @@ def main():
     simclr.load_state_dict(checkpoint['model'])
     simclr.cuda()
     start_epoch = checkpoint['epoch']
+    epochs = start_epoch+args.epochs
 
     # Training
     print(colored('Starting main loop', 'blue'))
-    for epoch in range(start_epoch, args.epochs):
-        print(colored('Epoch %d/%d' %(epoch, args.epochs), 'yellow'))
+    for epoch in range(start_epoch, epochs):
+        print(colored('Epoch %d/%d' %(epoch, epochs), 'yellow'))
         print(colored('-'*15, 'yellow'))
 
         # Adjust lr
@@ -238,7 +239,7 @@ def main():
     start_epoch = checkpoint['epoch']
     best_loss = checkpoint['best_loss']
     best_loss_head = checkpoint['best_loss_head']
-    epochs = args.epochs
+    epochs = start_epoch+args.epochs
 
     if args.cluster_numbers:
         import torch.nn as nn

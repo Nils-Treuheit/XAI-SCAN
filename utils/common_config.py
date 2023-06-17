@@ -75,7 +75,9 @@ def get_model(p, pretrain_path=None):
         from models.models import ClusteringModel
         if p['setup'] == 'selflabel':
             assert(p['num_heads'] == 1)
-        model = ClusteringModel(backbone, p['nclusters'])
+            model = ClusteringModel(backbone, [p['num_classes']])
+        else:
+            model = ClusteringModel(backbone, p['nclusters'])
 
     else:
         raise ValueError('Invalid setup {}'.format(p['setup']))
@@ -96,8 +98,8 @@ def get_model(p, pretrain_path=None):
             # We only continue with the best head (pop all heads first, then copy back the best head)
             model_state = state['model']
             all_heads = [k for k in model_state.keys() if 'cluster_head' in k]
-            best_head_weight = model_state['cluster_head.%d.weight' %(state['head'])]
-            best_head_bias = model_state['cluster_head.%d.bias' %(state['head'])]
+            best_head_weight = model_state['cluster_head.%d.weight' %(1)]
+            best_head_bias = model_state['cluster_head.%d.bias' %(1)]
             for k in all_heads:
                 model_state.pop(k)
 
