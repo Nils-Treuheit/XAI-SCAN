@@ -86,9 +86,9 @@ The configuration files can be found in the `configs/` directory. The training p
 
 For example, run the following commands sequentially to perform our method on CIFAR10:
 ```shell
-python simclr.py --config_env configs/your_env.yml --config_exp configs/pretext/simclr_cifar10.yml
-python scan.py --config_env configs/your_env.yml --config_exp configs/scan/scan_cifar10.yml
-python selflabel.py --config_env configs/your_env.yml --config_exp configs/selflabel/selflabel_cifar10.yml
+python simclr.py --config_env configs/env.yml --config_exp configs/pretext/simclr_cifar20.yml
+python scan.py --config_env configs/env.yml --config_exp configs/scan/scan_cifar20.yml
+python selflabel.py --config_env configs/env.yml --config_exp configs/selflabel/selflabel_cifar20.yml
 ```
 ### Remarks
 The provided hyperparameters are identical for CIFAR10, CIFAR100-20 and STL10. However, fine-tuning the hyperparameters can further improve the results. We list the most important hyperparameters of our method below:
@@ -136,7 +136,8 @@ We also train SCAN on ImageNet for 1000 clusters. We use 10 clusterheads and fin
 ### Evaluation
 Pretrained models from the model zoo can be evaluated using the `eval.py` script. For example, the model on cifar-10 can be evaluated as follows:
 ```shell
-python eval.py --config_exp configs/scan/scan_cifar10.yml --model $MODEL_PATH 
+python eval.py --config_exp configs/scan/scan_cifar20.yml --model $MODEL_PATH 
+python eval.py --config_exp configs/scan/scan_cifar20.yml --model results/cifar-20/scan/model.pth.tar 
 ```
 Visualizing the prototype images is easily done by setting the `--visualize_prototypes` flag. For example on cifar-10:
 <p align="center">
