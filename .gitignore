@@ -1,5 +1,5 @@
 data/cifar-20/
-*.pth.tar
+*point.pth.tar
 
 
 # Byte-compiled / optimized / DLL files
