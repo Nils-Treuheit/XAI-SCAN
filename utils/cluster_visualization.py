@@ -72,14 +72,14 @@ def save_predictions(config, dataloader, model):
 
 
 def get_nearest_neighbours_for_image(index_of_center, predictions):
-    center_image_neighbours = predictions[0]["neighbors"][index_of_center]
+    center_image_neighbours = predictions["neighbors"][index_of_center]
     print("center nei: ", center_image_neighbours)
     neighbour_indexes = []
     for image_idx in center_image_neighbours:
-        neigbours_idx = predictions[0]["neighbors"][image_idx]
+        neigbours_idx = predictions["neighbors"][image_idx]
 
         for idx in neigbours_idx:
-            n_list = predictions[0]["neighbors"][idx]
+            n_list = predictions["neighbors"][idx]
             n_list = n_list.tolist()
             neighbour_indexes = neighbour_indexes + n_list
 
@@ -156,8 +156,10 @@ def show_wordcloud(captions):
     plt.show()
 
 
-def get_caption(image):
+def get_caption(image ,max_new_tokens=4):
     captioner = pipeline("image-to-text", model="Salesforce/blip-image-captioning-base")
-    caption = captioner(images=image, max_new_tokens=4)[0]["generated_text"]
+    caption = captioner(images=image, max_new_tokens=max_new_tokens)[0][
+        "generated_text"
+    ]
     filtered_caption = remove_stopwords(caption)
     return filtered_caption
