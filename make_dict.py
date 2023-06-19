@@ -24,8 +24,6 @@ import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-with open("./configs/pretext/simclr_cifar20.yml", 'r') as stream:
-    config_simclr = yaml.safe_load(stream)
     
 with open("./configs/scan/scan_cifar20.yml", 'r') as stream:
     config_scan = yaml.safe_load(stream)
@@ -57,8 +55,10 @@ def find_matching_indexes(array, number):
     return [index for index, value in enumerate(array) if value == number]
 
 for i, predictions_dict in enumerate(predictions_list):
-    # Get prototypes
+    # Get prototypes, len = num of clusters
     prototype_indices = get_prototypes(config_scan, predictions_dict, features, scan)
+    print(len(prototype_indices))
+    
     
     # Get number of clusters
     num_clusters  = len(prototype_indices)
@@ -70,8 +70,10 @@ for i, predictions_dict in enumerate(predictions_list):
     
     # Getting the predictions for this head
     predictions_for_head = predictions_dict["predictions"]
-    predictions_for_head_neighbours = predictions_dict["neighbors"]    
     
+    # Every instance with its 21 neighbours
+    predictions_for_head_neighbours = predictions_dict["neighbors"]    
+
     # Loop over clusters 
     for cluster in range(num_clusters):
         
@@ -84,11 +86,18 @@ for i, predictions_dict in enumerate(predictions_list):
         images = [Image.fromarray(dataset.get_image(i)) for i in indexes_for_cluster]
         
         print(f"Cluster-{cluster}", len(indexes_for_cluster))
-        # Find 20 top 
+        
+        # Gets the center of the cluster
         prototype = prototype_indices[cluster]
+        
+        # Gets the neigbors of the center
         prototype_neighbours = predictions_for_head_neighbours[prototype]
         
-        # Finds captions for top k-s in cluster
+        # for idx in prototype_neighbours[:3]:
+        #     plt.imshow(dataset.get_image(idx))
+        #     plt.show()
+        
+        # Finds captions for top k-s in cluster 
         captions = [
             get_caption(image=Image.fromarray(dataset.get_image(i))) 
             if i not in image_captions
@@ -106,14 +115,15 @@ for i, predictions_dict in enumerate(predictions_list):
         explanation = ''
         for word, count in most_common_words[:3]:
             explanation = explanation + ' ' + word 
-        print(explanation)
+        
         
         results[head_name][cluster_name] = {
             "images": images, 
             "top_neighbours": prototype_neighbours,
-            "explanation": ""
+            "explanation": explanation
         }
-        with open('clusters_explanations.pkl', 'wb') as fp:
+        print(results[head_name][cluster_name]["explanation"])
+        with open('clusters_explanations2.pkl', 'wb') as fp:
             pickle.dump(results, fp)
             print('dictionary saved successfully to file')
     
