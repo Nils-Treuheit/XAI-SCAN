@@ -7,12 +7,13 @@ import yaml
 from termcolor import colored
 from utils.common_config import get_train_dataset, get_train_transformations, get_train_dataloader,\
                                 get_model, get_val_dataloader, get_val_transformations, get_criterion,\
-                                get_optimizer, adjust_learning_rate, get_val_dataset
+                                get_optimizer, adjust_learning_rate, get_val_dataset, get_visualization_transformations
 from utils.evaluate_utils import get_predictions, hungarian_evaluate, get_sample_preds
 from utils.memory import MemoryBank 
 from utils.utils import fill_memory_bank
 from utils.train_utils import simclr_train, scan_train
 from utils.evaluate_utils import contrastive_evaluate, scan_evaluate
+from show_clusters import query_text_explain
 from data.custom_dataset import NeighborsDataset
 from sampleDataSet import SampleDataSet
 from get_sample_img import get_pic
@@ -352,7 +353,7 @@ def main():
     print('Accuracy of top-%d nearest neighbors on val set is %.2f' %(args.topk, 100*acc))
     if not args.perf: np.save( topk_sample_file_path, indices ) 
 
-    img_transform = get_val_transformations(config_scan)
+    img_transform = get_visualization_transformations(config_scan)
     img_dataset = NeighborsDataset(SampleDataSet(img_samples,transform=img_transform), indices, args.topk)
     img_dataloader = get_val_dataloader(config_scan,img_dataset)
 
@@ -386,13 +387,14 @@ def main():
         print(clustering_stats)
 
     # give results for specific heads
-    predictions, features = get_sample_preds(config_scan, img_dataloader, scan, return_features=True)
-    print("Features of Sample/s:",features)
+    sample_predictions, sample_features = get_sample_preds(config_scan, img_dataloader, scan, return_features=True)
+    print("Features of Sample/s:",sample_features)
     for cluster_head in cluster_heads:
         print("Predictions of Sample/s for "+
               "%d. cluster head:"%cluster_head,
-              predictions[cluster_head])
+              sample_predictions[cluster_head])
 
+    query_text_explain(sample_predictions, features, img_dataset, predictions)
 
 if __name__ == "__main__":
     main() 

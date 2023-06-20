@@ -245,6 +245,13 @@ def get_train_transformations(p):
     else:
         raise ValueError('Invalid augmentation strategy {}'.format(p['augmentation_strategy']))
 
+def get_visualization_transformations(p):
+    return transforms.Compose(
+        [
+            transforms.ToTensor(),
+            transforms.Normalize(**p["transformation_kwargs"]["normalize"]),
+        ]
+    )
 
 def get_val_transformations(p):
     return transforms.Compose([
