@@ -10,6 +10,7 @@ from utils.common_config import get_train_dataset, get_train_transformations, ge
 from utils.evaluate_utils import get_predictions, hungarian_evaluate, get_sample_preds
 from utils.memory import MemoryBank 
 from utils.utils import fill_memory_bank
+from evaluation_stats import plot_silhouette_analysis
 from data.custom_dataset import NeighborsDataset
 from sampleDataSet import SampleDataSet
 from get_sample_img import get_pic
@@ -42,7 +43,8 @@ FLAGS.add_argument('--no_grad', default=False, action='store_true',
 FLAGS.add_argument('--no_viz', default=False, action='store_true', 
                    help='disable plot evaluation functionality')
 FLAGS.add_argument('--perf', default=False, action='store_true', 
-                   help='used to time minimal query effort method')
+                   help='used to time minimal query effort method'),
+FLAGS.add_argument('--eval_stats', default=False, help='if True, execute intrinsic and extrinsic evalution')
 args = FLAGS.parse_args()
 
 topk_sample_file_path = os.path.join(os.path.dirname(__file__), 'results', 'cifar-20', 
@@ -174,10 +176,24 @@ def main():
         predictions, features = get_predictions(config_scan, img_dataloader, scan, return_features=True)
         print("Features Shape:",features.size())
         # give results for specific heads
+        labels = {}
         for cluster_head in cluster_heads:
             print("%d. Cluster Head\n----------------"%cluster_head)
             print("Predictions keys:",predictions[cluster_head].keys(),
                   "| Predictions Shape:",predictions[cluster_head]["predictions"].size())
+            if args.eval_stats is True:
+                pred_val = []
+                for item in predictions[cluster_head]["predictions"].numpy():
+                    pred_val.append(item)
+                labels[cluster_head] = pred_val
+        
+        if args.eval_stats is True:
+            unique_values_count = {}
+            unique_values = {}
+            for cluster_head in cluster_heads:
+                unique_values_count[cluster_head] = len(np.unique(labels[cluster_head]))
+                unique_values[cluster_head] = np.unique(labels[cluster_head])
+            plot_silhouette_analysis(features.numpy(), labels, cluster_heads, unique_values_count, unique_values)
         
     # give eva for 20 cluster head since it is interpretable
     if not (args.no_viz or args.perf):
