@@ -172,12 +172,13 @@ def main():
 
 
 
-def query_text_explain(predictions_list, features, dataset, predictions_complete):
+def query_text_explain(predictions_list, features, dataset, predictions_complete, show_mc = True, show_wc = True):
 
     print("Preds List: " ,predictions_list[0].keys())
     # Show the distribution of the clusters
-    for predictions, complete_preds in zip(predictions_list,predictions_complete):
+    for c, preds_tuple in enumerate(zip(predictions_list,predictions_complete)):
         
+        predictions, complete_preds = preds_tuple
         clusters = defaultdict(list)
         
         for idx, c in enumerate(predictions["predictions"]):
@@ -202,18 +203,18 @@ def query_text_explain(predictions_list, features, dataset, predictions_complete
             captions = visualize_cluster(
                 images_for_cluster_idx, dataset, cluster, show_images_for_single_cluster
             )
-            torch.save(captions, "captions.pt")
+            torch.save(captions, f"captions_head{c}.pt")
         else:
-            captions = torch.load("captions.pt")
+            captions = torch.load(f"captions_head{c}.pt")
 
         # display Images
-        if show_images_multiple_clusters:
+        if show_mc:
             nrows = 5
             ncols = 6
 
             plt.figure(figsize=(8, 8))
             position = 1
-            for i in prototype_indices_to_show:
+            for i in range(prototype_indices):
                 # Show random clusters or from prototyoes based on show_from_prototypes
                 anchor_idx = (
                     prototype_indices[i]
@@ -238,7 +239,8 @@ def query_text_explain(predictions_list, features, dataset, predictions_complete
             plt.show()
 
         most_common_words = find_most_common_words(captions)
-        show_wordcloud(captions)
+        if show_wc:
+            show_wordcloud(captions)
         for c in set(clusters.keys()):
             print("Cluster", c, ":", len(clusters[c]))
             
