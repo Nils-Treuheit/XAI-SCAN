@@ -193,7 +193,7 @@ def main():
             for cluster_head in cluster_heads:
                 unique_values_count[cluster_head] = len(np.unique(labels[cluster_head]))
                 unique_values[cluster_head] = np.unique(labels[cluster_head])
-                plot_silhouette_analysis(features.numpy(), labels, cluster_heads, unique_values_count, unique_values)
+            plot_silhouette_analysis(features.numpy(), labels, cluster_heads, unique_values_count, unique_values)
         
     # give eva for 20 cluster head since it is interpretable
     if not (args.no_viz or args.perf):
