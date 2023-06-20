@@ -40,6 +40,8 @@ FLAGS.add_argument('--re_calc', default=False, action='store_true',
                    help='re-calc knn for train set')
 FLAGS.add_argument('--no_grad', default=False, action='store_true', 
                    help='disable grad cam explainable ai functionality')
+FLAGS.add_argument('--no_text', default=False, action='store_true', 
+                   help='disable textual explainable ai functionality')
 FLAGS.add_argument('--no_viz', default=False, action='store_true', 
                    help='disable plot evaluation functionality')
 FLAGS.add_argument('--perf', default=False, action='store_true', 
@@ -209,7 +211,7 @@ def main():
               "%d. cluster head:"%cluster_head,
               sample_predictions[cluster_head])
     
-    query_text_explain(sample_predictions, features, img_dataset, predictions)
+    if not (args.no_text or args.perf): query_text_explain(sample_predictions, features, img_dataset, predictions)
 
 if __name__ == "__main__":
     main() 
