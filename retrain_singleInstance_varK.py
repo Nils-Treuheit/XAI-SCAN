@@ -414,7 +414,7 @@ def main():
 
     if not (args.no_text or args.perf): 
         from show_clusters import query_text_explain
-        query_text_explain(sample_predictions, features, img_dataset, predictions)
+        query_text_explain(sample_predictions, features, img_dataset, predictions, cluster_heads)
 
 if __name__ == "__main__":
     main() 

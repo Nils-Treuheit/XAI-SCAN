@@ -173,12 +173,13 @@ def main():
 
 
 
-def query_text_explain(predictions_list, features, dataset, predictions_complete, show_mc = True, show_wc = True, show_rand=True, use_pre_save=True):
+def query_text_explain(predictions_list, features, dataset, predictions_complete, cluster_heads, show_mc = True, show_wc = True, show_rand=True, use_pre_save=True):
     
 
     print("Preds List: " ,predictions_list[0].keys())
     # Show the distribution of the clusters
     for ch, preds_tuple in enumerate(zip(predictions_list,predictions_complete)):
+        if ch not in cluster_heads: continue
         
         predictions, complete_preds = preds_tuple
         
@@ -190,7 +191,7 @@ def query_text_explain(predictions_list, features, dataset, predictions_complete
             caption = get_caption(image=Image.fromarray(img))
             plt.title(caption, fontsize=8)
             plt.axis("off")
-            plt.title("Query Image",idx)
+            plt.title(f"Query Image {idx}")
             plt.show()
 
 
@@ -257,7 +258,7 @@ def query_text_explain(predictions_list, features, dataset, predictions_complete
                         position += 1
                 proto_caps.append(caps)
             print("Finished plot!")
-            plt.title(f"{nrows} Random Clusters of Cluster Head {ch}")
+            plt.suptitle(f"{nrows} Random Clusters of Cluster Head {ch}")
             plt.show()
 
             if show_wc:

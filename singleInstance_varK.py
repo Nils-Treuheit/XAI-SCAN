@@ -28,7 +28,7 @@ FLAGS.add_argument('--scan_model', default="./results/cifar-20/scan/model.pth.ta
                    help='Location where model is saved')
 FLAGS.add_argument('--save_path', default='./results', help='Location of save_paths')
 FLAGS.add_argument('-k','--topk', default=50, type=int, help='top k number for knn simclr method')
-FLAGS.add_argument('-c','--cluster_heads', default="0,2,4", 
+FLAGS.add_argument('-c','--cluster_heads', default="0,1,2", 
                    help='comma separated index list of cluster heads'+
                    ' (each head defines a number of k clusters) '+
                    'for scan method (pretrained heads for k=[5,20,100,300,500])')
@@ -213,7 +213,7 @@ def main():
     
     if not (args.no_text or args.perf): 
         from show_clusters import query_text_explain
-        query_text_explain(sample_predictions, features, img_dataset, predictions)
+        query_text_explain(sample_predictions, features, img_dataset, predictions, cluster_heads)
 
 if __name__ == "__main__":
     main() 

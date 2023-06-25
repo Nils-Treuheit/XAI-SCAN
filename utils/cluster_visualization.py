@@ -159,7 +159,7 @@ def show_wordcloud(captions, title = None):
     )
     # Display the generated Word Cloud
     plt.imshow(word_cloud, interpolation="bilinear")
-    if title!=None: plt.title(title)
+    if title!=None: plt.suptitle(title)
     plt.axis("off")
     plt.show()
 
