@@ -26,6 +26,7 @@ from utils.cluster_visualization import (
 from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 # Can be between 1 and topk (20)
 #center_image_index = 15
@@ -172,13 +173,24 @@ def main():
 
 
 
-def query_text_explain(predictions_list, features, dataset, predictions_complete, show_mc = True, show_wc = True):
+def query_text_explain(predictions_list, features, dataset, predictions_complete, show_mc = True, show_wc = True, show_rand=True, use_pre_save=True):
+    
 
     print("Preds List: " ,predictions_list[0].keys())
     # Show the distribution of the clusters
-    for c, preds_tuple in enumerate(zip(predictions_list,predictions_complete)):
+    for ch, preds_tuple in enumerate(zip(predictions_list,predictions_complete)):
         
         predictions, complete_preds = preds_tuple
+        
+        print("Visualize Query Images:")
+        for idx,_ in enumerate(predictions["predictions"]):
+            img = dataset.dataset.get_sample_image(idx) if(isinstance(dataset,NeighborsDataset)) else dataset.get_sample_image(idx)
+            plt.imshow(img)
+            caption = get_caption(image=Image.fromarray(img))
+            plt.title(caption, fontsize=8)
+            plt.axis("off")
+
+
         clusters = defaultdict(list)
         
         for idx, c in enumerate(predictions["predictions"]):
@@ -186,66 +198,74 @@ def query_text_explain(predictions_list, features, dataset, predictions_complete
 
         prototype_indices = get_prototypes(complete_preds, features)
 
-        print("Top classified prototypes: ", prototype_indices)
+        print("Top classified prototypes:", prototype_indices)
 
 
-        images_for_cluster_idx = get_nearest_neighbours_for_image(
-            0, predictions, complete_preds
-        )
-
-        print("Number of neighgbours found: ", len(images_for_cluster_idx))
-
-        # target cluster
-        cluster = complete_preds["predictions"][0]
-        print("Cluster of center: ", cluster.item())
-
-        if find_captions:
-            captions = visualize_cluster(
-                images_for_cluster_idx, dataset, cluster, show_images_for_single_cluster
+        # Query Clusters
+        captions = list()
+        for idx,cluster in enumerate(predictions["predictions"]):
+            images_for_cluster_idx = get_nearest_neighbours_for_image(
+                idx, predictions, complete_preds
             )
-            torch.save(captions, f"captions_head{c}.pt")
-        else:
-            captions = torch.load(f"captions_head{c}.pt")
+            print("Number of neighbors found:", len(images_for_cluster_idx))
+            
+            print("KNN-Cluster of Query Image:", cluster.item())
+            if use_pre_save and os.path.exists(f"captions_head{ch}_q{idx}.pt"):
+                captions.append(torch.load(f"captions_head{ch}_q{idx}.pt"))
+            else:    
+                caps = visualize_cluster(
+                    images_for_cluster_idx, dataset, cluster
+                )
+                torch.save(caps, f"captions_head{ch}_q{idx}.pt")
+                captions.append(caps)
+            
 
         # display Images
         if show_mc:
-            nrows = 5
+            indexes = np.random.choice([*range(len(prototype_indices))],5,replace=False)
+            nrows = len(prototype_indices) if not show_rand else 5
             ncols = 6
 
             plt.figure(figsize=(8, 8))
             position = 1
-            for i in range(prototype_indices):
+            for i in range(len(prototype_indices)):
                 # Show random clusters or from prototyoes based on show_from_prototypes
-                anchor_idx = (
-                    prototype_indices[i]
-                    if show_from_prototypes
-                    else np.random.choice(range(predictions["predictions"].shape[0]))
-                )
+                anchor_idx = prototype_indices[i]
 
-                neighbour_indicies = predictions["neighbors"][anchor_idx][1:6]
-                cluster = predictions["predictions"][anchor_idx]
-                print("anchor_idx: ", anchor_idx)
-                print("Cluster: ", cluster.item())
+                neighbour_indicies = complete_preds["neighbors"][anchor_idx][1:6]
+                cluster = complete_preds["predictions"][anchor_idx]
+                print("anchor_idx:", anchor_idx)
+                print("Cluster:", cluster.item())
                 indices = [anchor_idx] + neighbour_indicies.tolist()
 
+                caps = list()
                 for j in range(ncols):
-                    plt.subplot(nrows, ncols, position)
-                    plt.imshow(dataset.get_image(indices[j])["anchor"])
-                    caption = get_caption(image=dataset.get_image(indices[j])["anchor"])
-                    plt.title(caption, fontsize=8)
-                    plt.axis("off")
-                    position += 1
+                    img = dataset.dataset.get_image(indices[j]) if(isinstance(dataset,NeighborsDataset)) else dataset.get_image(indices[j])
+                    caption = get_caption(image=Image.fromarray(img))
+                    caps.append(caption)
+                    if i in indexes:
+                        plt.subplot(nrows, ncols, position)
+                        plt.imshow(img)
+                        plt.title(caption, fontsize=8)
+                        plt.axis("off")
+                        position += 1
+                if show_wc:
+                    print(f"WordCloud for Cluster {i}:")
+                    show_wordcloud(caps)
+                    
             print("Finished plot!")
             plt.show()
 
-        most_common_words = find_most_common_words(captions)
-        if show_wc:
-            show_wordcloud(captions)
         for c in set(clusters.keys()):
-            print("Cluster", c, ":", len(clusters[c]))
-            
-        for word, count in most_common_words[:10]:
-            print(word, count)
+            print(f"Cluster {c} holds", len(clusters[c]), "Query Images!")
+
+        print(("Word Cloud and " if show_wc else "")+"Most Common Words for Query KNN-Clusters:")
+        for caps in captions:
+            most_common_words = find_most_common_words(caps)
+            if show_wc:
+                show_wordcloud(caps)   
+            for word, count in most_common_words[:10]:
+                print(word, count)
 
 
 if __name__ == "__main__":

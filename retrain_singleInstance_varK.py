@@ -56,7 +56,8 @@ FLAGS.add_argument('--no_viz', default=False, action='store_true',
                    help='disable plot evaluation functionality')
 FLAGS.add_argument('--perf', default=False, action='store_true', 
                    help='used to time minimal query effort method')
-FLAGS.add_argument('--eval_stats', default=False, help='if True, execute intrinsic and extrinsic evalution')
+FLAGS.add_argument('--eval_stats', default=False, action='store_true', 
+                   help='if True, execute intrinsic and extrinsic evalution')
 args = FLAGS.parse_args()
 
 topk_sample_file_path = os.path.join(os.path.dirname(__file__), 'results', 'cifar-20', 
