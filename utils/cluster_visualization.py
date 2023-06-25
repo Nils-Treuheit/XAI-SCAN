@@ -93,7 +93,7 @@ def get_nearest_neighbours_for_image(index_of_center, predictions, complete_pred
     return combined
 
 
-def visualize_cluster(images_for_cluster_idx, dataset, cluster, show_images):
+def visualize_cluster(images_for_cluster_idx, dataset, cluster, show_images=True):
     images = []
     captions = []
     captioner = pipeline("image-to-text", model="Salesforce/blip-image-captioning-base")
