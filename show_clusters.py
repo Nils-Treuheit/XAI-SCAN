@@ -212,7 +212,7 @@ def query_text_explain(predictions_list, features, dataset, predictions_complete
             )
             print("Number of neighbors found:", len(images_for_cluster_idx))
             
-            print("KNN-Cluster of Query Image:", cluster.item())
+            print("Query Image belongs to Cluster:", cluster.item())
             if use_pre_save and os.path.exists(f"captions_head{ch}_q{idx}.pt"):
                 captions.append(torch.load(f"captions_head{ch}_q{idx}.pt"))
             else:    
