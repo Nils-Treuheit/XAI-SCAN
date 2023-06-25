@@ -182,6 +182,7 @@ def query_text_explain(predictions_list, features, dataset, predictions_complete
         
         predictions, complete_preds = preds_tuple
         
+        print(type(predictions["predictions"]),len(predictions["predictions"]))
         print("Visualize Query Images:")
         for idx,_ in enumerate(predictions["predictions"]):
             img = dataset.dataset.get_sample_image(idx) if(isinstance(dataset,NeighborsDataset)) else dataset.get_sample_image(idx)
@@ -189,6 +190,8 @@ def query_text_explain(predictions_list, features, dataset, predictions_complete
             caption = get_caption(image=Image.fromarray(img))
             plt.title(caption, fontsize=8)
             plt.axis("off")
+            plt.title("Query Image",idx)
+            plt.show()
 
 
         clusters = defaultdict(list)
@@ -226,8 +229,11 @@ def query_text_explain(predictions_list, features, dataset, predictions_complete
             nrows = len(prototype_indices) if not show_rand else 5
             ncols = 6
 
+            print("Show clusters:", indexes.tolist())
+
             plt.figure(figsize=(8, 8))
             position = 1
+            proto_caps = list()
             for i in range(len(prototype_indices)):
                 # Show random clusters or from prototyoes based on show_from_prototypes
                 anchor_idx = prototype_indices[i]
@@ -249,21 +255,26 @@ def query_text_explain(predictions_list, features, dataset, predictions_complete
                         plt.title(caption, fontsize=8)
                         plt.axis("off")
                         position += 1
-                if show_wc:
-                    print(f"WordCloud for Cluster {i}:")
-                    show_wordcloud(caps)
-                    
+                proto_caps.append(caps)
             print("Finished plot!")
+            plt.title(f"{nrows} Random Clusters of Cluster Head {ch}")
             plt.show()
+
+            if show_wc:
+                for i, caps in enumerate(proto_caps):
+                    show_wordcloud(caps, f"WordCloud for Cluster {i} of Cluster Head {ch}")
+                    
+            
 
         for c in set(clusters.keys()):
             print(f"Cluster {c} holds", len(clusters[c]), "Query Images!")
 
         print(("Word Cloud and " if show_wc else "")+"Most Common Words for Query KNN-Clusters:")
-        for caps in captions:
+        for i,caps in enumerate(captions):
             most_common_words = find_most_common_words(caps)
             if show_wc:
-                show_wordcloud(caps)   
+                show_wordcloud(caps, f"WordCloud for Query Cluster {i} of Cluster Head {ch}")  
+            print("Most Common Words for Query Cluster {i}:") 
             for word, count in most_common_words[:10]:
                 print(word, count)
 

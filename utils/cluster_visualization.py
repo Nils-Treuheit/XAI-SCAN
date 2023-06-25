@@ -148,7 +148,7 @@ def remove_stopwords(sentence):
     return filtered_sentence
 
 
-def show_wordcloud(captions):
+def show_wordcloud(captions, title = None):
     single_string: str = ""
     for capture in tqdm(captions, total=len(captions), desc="Building word cloud"):
         single_string += capture + "\n"
@@ -159,6 +159,7 @@ def show_wordcloud(captions):
     )
     # Display the generated Word Cloud
     plt.imshow(word_cloud, interpolation="bilinear")
+    if title!=None: plt.title(title)
     plt.axis("off")
     plt.show()
 
