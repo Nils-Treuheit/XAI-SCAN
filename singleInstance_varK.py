@@ -10,11 +10,9 @@ from utils.common_config import get_train_dataset, get_train_transformations, ge
 from utils.evaluate_utils import get_predictions, hungarian_evaluate, get_sample_preds
 from utils.memory import MemoryBank 
 from utils.utils import fill_memory_bank
-from evaluation_stats import plot_silhouette_analysis
 from data.custom_dataset import NeighborsDataset
 from sampleDataSet import SampleDataSet
 from get_sample_img import get_pic
-from show_clusters import query_text_explain
 from PIL import Image
 import numpy as np
 import os 
@@ -165,11 +163,11 @@ def main():
 
     if not args.no_grad:
         # Apply Grad-CAM: generate heatmap for explaining cluster assignment with GradCam
-        for img in img_samples:
-            from grad_cam import grad_cam
+        from grad_cam import grad_cam
+        for idx,img in enumerate(img_samples):    
             #input_rgb_img = img_dataset.dataset.get_sample_image(0)
             input_image_arr = np.array(img_dataset.anchor_transform(Image.fromarray(img))) 
-            grad_cam(model = scan, input_rgb_img =img, input_img_arr = input_image_arr)
+            grad_cam(model = scan, input_rgb_img = img, input_img_arr = input_image_arr, qid = idx)
     
     # SCAN evaluation
     cluster_heads = [int(cluster_head) for cluster_head in args.cluster_heads.split(",")]
@@ -191,6 +189,7 @@ def main():
                 labels[cluster_head] = pred_val
         
         if args.eval_stats is True:
+            from evaluation_stats import plot_silhouette_analysis
             unique_values_count = {}
             unique_values = {}
             for cluster_head in cluster_heads:
@@ -212,7 +211,10 @@ def main():
               "%d. cluster head:"%cluster_head,
               sample_predictions[cluster_head])
     
-    if not (args.no_text or args.perf): query_text_explain(sample_predictions, features, img_dataset, predictions)
+    if not (args.no_text or args.perf): 
+        from show_clusters import query_text_explain
+        query_text_explain(sample_predictions, features, img_dataset, predictions)
 
 if __name__ == "__main__":
     main() 
+

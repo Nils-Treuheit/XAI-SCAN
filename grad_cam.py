@@ -4,7 +4,7 @@ from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.image import show_cam_on_image, preprocess_image
 import matplotlib.pyplot as plt
 
-def grad_cam(model,input_rgb_img, input_img_arr):
+def grad_cam(model,input_rgb_img, input_img_arr, qid):
     target_layers = [model.backbone.layer4[-1]]
 
     # You can also pass aug_smooth=True and eigen_smooth=True, to apply smoothing.
@@ -41,5 +41,5 @@ def grad_cam(model,input_rgb_img, input_img_arr):
     plt.tight_layout()
     
     # Save the image to a JPEG file
-    plt.savefig('singleinstance_gradcam.jpg', format='jpeg')
+    plt.savefig(f'./results/singleinstance_gradcam_q{qid}.jpg', format='jpeg')
     plt.show()
