@@ -68,7 +68,7 @@ pooch==1.4.0
 prompt-toolkit==3.0.36
 psutil==5.9.0
 pure-eval==0.2.2
-pyarrow==11.0.0
+pyarrow==14.0.1
 pycparser==2.21
 Pygments==2.15.1
 pyOpenSSL==23.0.0
