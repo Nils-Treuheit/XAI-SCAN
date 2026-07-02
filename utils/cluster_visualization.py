@@ -6,6 +6,10 @@ from transformers import pipeline
 from collections import Counter
 import nltk
 from nltk.corpus import stopwords
+try:
+    stopwords.words("english")
+except LookupError:
+    nltk.download('stopwords')
 import tqdm
 from tqdm import tqdm
 from wordcloud import WordCloud
@@ -15,7 +19,7 @@ from data.custom_dataset import NeighborsDataset
 from sampleDataSet import SampleDataSet
 from PIL import Image 
 
-# nltk.download('stopwords')
+
 
 
 @torch.no_grad()

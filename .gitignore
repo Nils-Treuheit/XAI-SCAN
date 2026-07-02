@@ -1,5 +1,10 @@
 data/cifar-20/
-*point.pth.tar
+data/stl10_binary/
+results/
+*.pth.tar
+*.npy
+*.pt
+captions/
 
 
 # Byte-compiled / optimized / DLL files

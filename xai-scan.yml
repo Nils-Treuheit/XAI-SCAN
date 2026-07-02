@@ -7,7 +7,7 @@ channels:
 dependencies:
   - abseil-cpp=20211102.0=h0e60522_0
   - accelerate=0.20.3=pyhd8ed1ab_0
-  - aiohttp=3.8.4=py311ha68e1ae_1
+  - aiohttp>=3.9.5
   - aiosignal=1.3.1=pyhd8ed1ab_0
   - appdirs=1.4.4=pyhd3eb1b0_0
   - arrow-cpp=11.0.0=py311h308b814_0
@@ -160,8 +160,8 @@ dependencies:
   - libtiff=4.5.0=h6c2663c_2
   - libuv=1.44.2=h2bbff1b_0
   - libvorbis=1.3.7=he774522_0
-  - libwebp=1.2.4=hbc33d0d_1
-  - libwebp-base=1.2.4=h2bbff1b_1
+  - libwebp>=1.3.2
+  - libwebp-base>=1.3.2
   - libxml2=2.10.3=h0ad7f3c_0
   - libxslt=1.1.37=h2bbff1b_0
   - lz4-c=1.9.4=h2bbff1b_0
@@ -178,16 +178,16 @@ dependencies:
   - mkl-service=2.4.0=py311h2bbff1b_1
   - mkl_fft=1.3.6=py311hf62ec03_1
   - mkl_random=1.2.2=py311hf62ec03_1
-  - mpmath=1.2.1=py311haa95532_0
+  - mpmath>=1.3.0
   - msys2-conda-epoch=20160418=1
   - multidict=6.0.4=py311ha68e1ae_0
   - multiprocess=0.70.14=py311ha68e1ae_3
   - munkres=1.1.4=py_0
   - nest-asyncio=1.5.6=py311haa95532_0
   - networkx=2.8.4=py311haa95532_1
-  - nltk=3.7=pyhd3eb1b0_0
+  - nltk>=3.8.2
   - nsight-compute=2023.1.1.4=0
-  - numexpr=2.8.4=py311h1fcbade_1
+  - numexpr>=2.8.7
   - numpy=1.24.3=py311hdab7c0b_1
   - numpy-base=1.24.3=py311hd01c5d8_1
   - opencv=4.6.0=py311h9284175_1
@@ -199,7 +199,7 @@ dependencies:
   - parso=0.8.3=pyhd3eb1b0_0
   - pcre=8.45=hd77b12b_0
   - pickleshare=0.7.5=pyhd3eb1b0_1003
-  - pillow=9.4.0=py311hd77b12b_0
+  - pillow>=10.1.0
   - pip=23.0.1=py311haa95532_0
   - platformdirs=2.5.2=py311haa95532_0
   - ply=3.11=py311haa95532_0
@@ -220,7 +220,7 @@ dependencies:
   - python-dateutil=2.8.2=pyhd3eb1b0_0
   - python-xxhash=3.2.0=py311ha68e1ae_0
   - python_abi=3.11=2_cp311
-  - pytorch=2.0.1=py3.11_cuda11.8_cudnn8_0
+  - pytorch>=2.2.0
   - pytorch-cuda=11.8=h24eeafa_5
   - pytorch-mutex=1.0=cuda
   - pytz=2022.7=py311haa95532_0
@@ -255,7 +255,7 @@ dependencies:
   - tornado>=6.4.1
   - tqdm=4.65.0=pyhd8ed1ab_1
   - traitlets=5.7.1=py311haa95532_0
-  - transformers=4.30.2=pyhd8ed1ab_1
+  - transformers>=4.36.0
   - ttach=0.0.3=pyhd8ed1ab_0
   - typing-extensions=4.5.0=py311haa95532_0
   - typing_extensions=4.5.0=py311haa95532_0
@@ -279,7 +279,7 @@ dependencies:
   - zlib=1.2.13=h8cc25b3_0
   - zstd=1.5.5=hd43e919_0
   - pip:
-      - torchaudio==2.0.2
-      - torchvision==0.15.2
+      - torchaudio>=2.2.0
+      - torchvision>=0.17.0
       - wordcloud==1.9.2
 prefix: C:\Users\nilst\.conda\envs\XAI-SCAN_copy

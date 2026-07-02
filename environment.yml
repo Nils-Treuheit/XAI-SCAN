@@ -115,8 +115,8 @@ dependencies:
   - libtiff=4.5.0=h6c2663c_2
   - libuv=1.44.2=h2bbff1b_0
   - libvorbis=1.3.7=he774522_0
-  - libwebp=1.2.4=hbc33d0d_1
-  - libwebp-base=1.2.4=h2bbff1b_1
+  - libwebp>=1.3.2
+  - libwebp-base>=1.3.2
   - libxml2=2.10.3=h0ad7f3c_0
   - libxslt=1.1.37=h2bbff1b_0
   - llvmlite=0.39.1=py310h23ce68f_0
@@ -136,14 +136,14 @@ dependencies:
   - mkl-service=2.4.0=py310h2bbff1b_0
   - mkl_fft=1.3.1=py310ha0764ea_0
   - mkl_random=1.2.2=py310h4ed8f06_0
-  - mpmath=1.2.1=py310haa95532_0
+  - mpmath>=1.3.0
   - msys2-conda-epoch=20160418=1
   - munkres=1.1.4=py_0
   - navigator-updater=0.3.0=py310haa95532_0
   - nbformat=5.7.0=py310haa95532_0
   - networkx=2.8.4=py310haa95532_1
   - numba=0.56.4=py310h4ed8f06_0
-  - numexpr=2.8.4=py310hd213c9f_0
+  - numexpr>=2.8.7
   - numpy=1.23.5=py310h60c9a35_0
   - numpy-base=1.23.5=py310h04254f7_0
   - openssl=1.1.1t=h2bbff1b_0
@@ -151,7 +151,7 @@ dependencies:
   - pandas=1.5.3=py310h4ed8f06_0
   - pathlib=1.0.1=pyhd3eb1b0_1
   - pcre=8.45=hd77b12b_0
-  - pillow=9.4.0=py310hd77b12b_0
+  - pillow>=10.1.0
   - pip=22.3.1=py310haa95532_0
   - pkginfo=1.9.6=py310haa95532_0
   - platformdirs=2.5.2=py310haa95532_0
@@ -175,7 +175,7 @@ dependencies:
   - python-fastjsonschema=2.16.2=py310haa95532_0
   - python-libarchive-c=2.9=pyhd3eb1b0_1
   - python_abi=3.10=2_cp310
-  - pytorch=2.0.1=py3.10_cuda11.8_cudnn8_0
+  - pytorch>=2.2.0
   - pytorch-cuda=11.8=h24eeafa_5
   - pytorch-mutex=1.0=cuda
   - pytz=2022.7=py310haa95532_0
@@ -246,6 +246,6 @@ dependencies:
       - tensorflow-estimator==2.10.0
       - tensorflow-io-gcs-filesystem==0.31.0
       - termcolor==2.2.0
-      - torchaudio==2.0.2
-      - torchvision==0.15.2
+      - torchaudio>=2.2.0
+      - torchvision>=0.17.0
 prefix: C:\ProgramData\Anaconda3

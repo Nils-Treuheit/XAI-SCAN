@@ -62,7 +62,9 @@ def main():
     
     # Load the official MoCoV2 checkpoint
     print(colored('Downloading moco v2 checkpoint', 'blue'))
-    os.system('wget -L https://dl.fbaipublicfiles.com/moco/moco_checkpoints/moco_v2_800ep/moco_v2_800ep_pretrain.pth.tar')
+    import urllib.request
+    checkpoint_url = 'https://dl.fbaipublicfiles.com/moco/moco_checkpoints/moco_v2_800ep/moco_v2_800ep_pretrain.pth.tar'
+    urllib.request.urlretrieve(checkpoint_url, 'moco_v2_800ep_pretrain.pth.tar')
     moco_state = torch.load('moco_v2_800ep_pretrain.pth.tar', map_location='cpu')
 
     
@@ -85,7 +87,7 @@ def main():
             raise ValueError('Unexpected key {}'.format(k)) 
 
     model.load_state_dict(new_state_dict)
-    os.system('rm -rf moco_v2_800ep_pretrain.pth.tar')
+    os.remove('moco_v2_800ep_pretrain.pth.tar')
    
  
     # Save final model

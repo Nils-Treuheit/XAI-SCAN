@@ -90,7 +90,7 @@ def main():
         predictions_list, features = save_predictions(config, dataloader, model)
         torch.save((predictions_list, features), "predictions.pt")
     else:
-        predictions_list, features = torch.load("predictions.pt")
+        predictions_list, features = torch.load("predictions.pt", weights_only=True)
 
     print("Length of predictions: ", len(predictions_list))
     # print("Dataloader Sample Keys:",next(iter(dataloader)).keys())#,"| Dataloader Image Shape:",next(iter(dataloader))["image"].size())
@@ -129,7 +129,7 @@ def main():
             )
             torch.save(captions, "captions.pt")
         else:
-            captions = torch.load("captions.pt")
+            captions = torch.load("captions.pt", weights_only=True)
 
         # display Images
         if show_images_multiple_clusters:
@@ -205,7 +205,7 @@ def query_text_explain(predictions_list, features, dataset, predictions_complete
             )
             torch.save(captions, f"captions_head{c}.pt")
         else:
-            captions = torch.load(f"captions_head{c}.pt")
+            captions = torch.load(f"captions_head{c}.pt", weights_only=True)
 
         # display Images
         if show_mc:

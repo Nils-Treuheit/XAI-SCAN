@@ -80,7 +80,7 @@ def main():
 
         # Read model weights
         print(colored('Load model weights ...', 'blue'))
-        state_dict_simclr = torch.load(args.simclr_model, map_location='cpu')
+        state_dict_simclr = torch.load(args.simclr_model, map_location='cpu', weights_only=True)
 
         # CUDA
         simclr.cuda()
@@ -125,7 +125,7 @@ def main():
 
     # Read model weights
     print(colored('Load model weights ...', 'blue'))
-    state_dict_simclr = torch.load(args.simclr_model, map_location='cpu')
+    state_dict_simclr = torch.load(args.simclr_model, map_location='cpu', weights_only=True)
     state_dict_scan = torch.load(args.scan_model, map_location='cpu')
 
     simclr.load_state_dict(state_dict_simclr)
